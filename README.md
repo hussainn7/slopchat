@@ -9,7 +9,7 @@ A free, self-hosted ManyChat alternative for Instagram comment-to-DM automation.
 
 </div>
 
-When someone comments a keyword on your Instagram reel or post, SlopChat automatically sends them a private reply via DM with your link. You can also configure a public comment reply to post under their comment at the same time.
+When someone comments a keyword on your Instagram reel or post, *SlopChat* automatically sends them a private reply via DM with your link. You can also configure a public comment reply to post under their comment at the same time.
 
 ManyChat does this but charges a monthly fee. SlopChat gives you the exact same core feature—running on your own infrastructure, with no seat limits and no monthly plan caps.
 
