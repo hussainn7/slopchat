@@ -189,6 +189,7 @@ async function sendRevealDirectMessage(
 }
 
 async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
+  console.log(`[DM Worker] Starting to process comment: ${job.data.commentText} for reel ${job.data.mediaId}`);
   const {
     instagramAccountId,
     commentId,
@@ -222,7 +223,9 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
     },
     orderBy: { createdAt: "asc" },
   });
+  console.log(`[DM Worker] Found ${automations.length} potential campaigns for post ${mediaId}`);
 
+  let matchFound = false;
   for (const automation of automations) {
     // "Any word" campaigns fire on every comment; otherwise require a keyword hit.
     const matchResult = automation.matchAnyWord
@@ -234,8 +237,12 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
         );
 
     if (!matchResult.matched) {
+      console.log(`[DM Worker] Automation ${automation.id} failed match against text "${commentText}"`);
       continue;
     }
+    
+    matchFound = true;
+    console.log(`[DM Worker] Automation ${automation.id} matched!`);
 
     const existingLog = await prisma.dmLog.findUnique({
       where: {
