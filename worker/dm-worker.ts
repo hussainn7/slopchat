@@ -3,6 +3,7 @@ import { createDMWorker } from "@/lib/queue/dm-worker";
 import { recordWorkerHeartbeat } from "@/lib/ops/worker-health";
 import { reconcileComments } from "@/lib/polling/comment-reconciler";
 import os from "node:os";
+import http from "node:http";
 
 const worker = createDMWorker();
 const startedAt = new Date().toISOString();
@@ -14,6 +15,17 @@ const POLL_INTERVAL_MS = Number(
 );
 
 console.log("[DM Worker] Started");
+
+// Create a dummy HTTP server for Back4app health checks
+const port = process.env.PORT || 8080;
+const server = http.createServer((req, res) => {
+  res.writeHead(200, { "Content-Type": "text/plain" });
+  res.end("Worker is healthy");
+});
+
+server.listen(port, () => {
+  console.log(`[DM Worker] Health check server listening on port ${port}`);
+});
 
 async function heartbeat() {
   try {
@@ -48,6 +60,7 @@ async function shutdown(signal: string) {
   console.log(`[DM Worker] ${signal} received, closing worker`);
   clearInterval(heartbeatTimer);
   clearInterval(pollTimer);
+  server.close();
   await worker.close();
   process.exit(0);
 }
