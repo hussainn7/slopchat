@@ -12,7 +12,7 @@ COPY . .
 # Generate Prisma client
 RUN npx prisma generate
 
-EXPOSE 8080
+EXPOSE 10000
 
 # Start the worker
 CMD ["npm", "run", "worker"]
