@@ -70,6 +70,96 @@ function isTemplateRejection(error: unknown): boolean {
   return !NON_TEMPLATE_REJECTIONS.some((pattern) => pattern.test(message));
 }
 
+/** Meta 2534014 — private reply via comment_id fails, but direct IGSID DM may work. */
+function isUserNotFoundError(error: unknown): boolean {
+  if (error instanceof MetaApiError && error.subcode === 2534014) return true;
+  const message = error instanceof Error ? error.message : "";
+  return /requested user cannot be found/i.test(message);
+}
+
+async function sendPrivateOrDirectText(
+  accessToken: string,
+  instagramAccountId: string,
+  commentId: string,
+  commenterId: string,
+  message: string
+): Promise<void> {
+  try {
+    await sendPrivateReply(accessToken, instagramAccountId, commentId, message);
+  } catch (error) {
+    if (!isUserNotFoundError(error)) throw error;
+    console.log(
+      `[DM Worker] Private reply failed (${formatError(error)}); falling back to direct DM`
+    );
+    await sendDirectMessage(accessToken, instagramAccountId, commenterId, message);
+  }
+}
+
+async function sendPrivateOrDirectButton(
+  accessToken: string,
+  instagramAccountId: string,
+  commentId: string,
+  commenterId: string,
+  text: string,
+  buttonTitle: string,
+  payload: string
+): Promise<void> {
+  try {
+    await sendPrivateReplyWithButton(
+      accessToken,
+      instagramAccountId,
+      commentId,
+      text,
+      buttonTitle,
+      payload
+    );
+  } catch (error) {
+    if (!isUserNotFoundError(error)) throw error;
+    console.log(
+      `[DM Worker] Private button reply failed (${formatError(error)}); falling back to direct DM`
+    );
+    await sendDirectMessageWithButton(
+      accessToken,
+      instagramAccountId,
+      commenterId,
+      text,
+      buttonTitle,
+      payload
+    );
+  }
+}
+
+async function sendPrivateOrDirectLinkButtons(
+  accessToken: string,
+  instagramAccountId: string,
+  commentId: string,
+  commenterId: string,
+  text: string,
+  buttons: { title: string; url: string }[]
+): Promise<void> {
+  try {
+    await sendPrivateReplyWithLinkButton(
+      accessToken,
+      instagramAccountId,
+      commentId,
+      text,
+      buttons
+    );
+  } catch (error) {
+    if (!isUserNotFoundError(error)) throw error;
+    console.log(
+      `[DM Worker] Private link reply failed (${formatError(error)}); falling back to direct DM`
+    );
+    await sendDirectMessageWithLinkButton(
+      accessToken,
+      instagramAccountId,
+      commenterId,
+      text,
+      buttons
+    );
+  }
+}
+
 type WorkerTrackedLink = {
   slug: string;
   label: string | null;
@@ -554,10 +644,11 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
           commenterName,
           trackedLinks: [],
         });
-        await sendPrivateReplyWithButton(
+        await sendPrivateOrDirectButton(
           accessToken,
           automation.instagramAccount.instagramId,
           commentId,
+          commenterId,
           openingText,
           automation.openingDmButtonLabel as string,
           automation.requireFollow
@@ -571,10 +662,11 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
             "quick favor before i send your link. i don't make any money from this, it's free. if you want to support me, just don't unfollow after, and star the repo on github if it helps you. tap the button once you're following and i'll send it over",
           commenterName,
         });
-        await sendPrivateReplyWithButton(
+        await sendPrivateOrDirectButton(
           accessToken,
           automation.instagramAccount.instagramId,
           commentId,
+          commenterId,
           promptText,
           automation.followPromptButtonLabel || "i'm following",
           `followcheck:${automation.id}`
@@ -592,10 +684,11 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
         );
 
         try {
-          await sendPrivateReplyWithLinkButton(
+          await sendPrivateOrDirectLinkButtons(
             accessToken,
             automation.instagramAccount.instagramId,
             commentId,
+            commenterId,
             bodyText,
             buttons
           );
@@ -616,10 +709,11 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
             bodyText
           );
           try {
-            await sendPrivateReply(
+            await sendPrivateOrDirectText(
               accessToken,
               automation.instagramAccount.instagramId,
               commentId,
+              commenterId,
               fallbackMessage
             );
           } catch {
@@ -635,10 +729,11 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
           commenterName,
           trackedLinks: automation.trackedLinks,
         });
-        await sendPrivateReply(
+        await sendPrivateOrDirectText(
           accessToken,
           automation.instagramAccount.instagramId,
           commentId,
+          commenterId,
           dmMessage
         );
       }

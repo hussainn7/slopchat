@@ -13,6 +13,10 @@ export function getRedisConnection(): Redis {
   if (!connection) {
     connection = new Redis(process.env.REDIS_URL!, {
       maxRetriesPerRequest: null, // Required by BullMQ
+      // Fail fast on Vercel — hanging forever leaves WebhookEvents stuck PENDING.
+      connectTimeout: 5_000,
+      commandTimeout: 8_000,
+      enableOfflineQueue: false,
     });
   }
   return connection;

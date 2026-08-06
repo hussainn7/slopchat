@@ -238,18 +238,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
-    await prisma.webhookEvent.update({
-      where: { id: webhookEvent.id },
-      data: {
-        status: "FAILED",
-        errorMessage: message,
-        processedAt: new Date(),
-      },
-    });
+    // Keep PENDING when Redis/queue is the failure so the worker can drain the
+    // payload later. Only mark FAILED for real parse/processing bugs.
+    const redisish =
+      /redis|ECONN|ETIMEDOUT|ENOTFOUND|Connection is closed|Stream isn't writeable|command timed out|connect E/i.test(
+        message
+      );
+    if (!redisish) {
+      await prisma.webhookEvent.update({
+        where: { id: webhookEvent.id },
+        data: {
+          status: "FAILED",
+          errorMessage: message,
+          processedAt: new Date(),
+        },
+      });
+    }
 
-    return NextResponse.json(
-      { success: false, error: "Webhook processing failed" },
-      { status: 500 }
-    );
+    // Always ack Meta — retries just pile up more PENDING rows.
+    return NextResponse.json({ success: true, deferred: redisish }, { status: 200 });
   }
 }
