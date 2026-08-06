@@ -11,12 +11,18 @@ let connection: Redis | null = null;
 
 export function getRedisConnection(): Redis {
   if (!connection) {
+    const onVercel = Boolean(process.env.VERCEL);
     connection = new Redis(process.env.REDIS_URL!, {
       maxRetriesPerRequest: null, // Required by BullMQ
-      // Fail fast on Vercel — hanging forever leaves WebhookEvents stuck PENDING.
-      connectTimeout: 5_000,
-      commandTimeout: 8_000,
-      enableOfflineQueue: false,
+      // Fail fast on Vercel only — hanging forever leaves WebhookEvents PENDING.
+      // The long-lived worker must not use commandTimeout or BullMQ breaks.
+      ...(onVercel
+        ? {
+            connectTimeout: 5_000,
+            commandTimeout: 8_000,
+            enableOfflineQueue: false,
+          }
+        : {}),
     });
   }
   return connection;
