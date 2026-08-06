@@ -17,7 +17,7 @@ async function main() {
   for (const ev of pending) {
     try {
       const events = parseCommentEvents(
-        ev.payload as Parameters<typeof parseCommentEvents>[0]
+        ev.payload as unknown as Parameters<typeof parseCommentEvents>[0]
       );
       for (const event of events) {
         await queue.add(
