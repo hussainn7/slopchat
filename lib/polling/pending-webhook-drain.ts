@@ -2,6 +2,8 @@ import { prisma } from "@/lib/db/client";
 import { getDMQueue } from "@/lib/queue/client";
 import { parseCommentEvents } from "@/lib/meta/webhook";
 
+const DONE_STATUSES = ["SENT", "SKIPPED_DEDUP", "SKIPPED_PLAN_LIMIT"] as const;
+
 /**
  * Vercel webhook handlers often hang on Redis (BullMQ TCP) after writing the
  * WebhookEvent row, so events sit at PENDING forever. The worker drains them.
@@ -23,6 +25,25 @@ export async function drainPendingWebhooks(limit = 50): Promise<number> {
         ev.payload as Parameters<typeof parseCommentEvents>[0]
       );
       for (const event of events) {
+        // Meta retries create fresh PENDING rows for the same comment. Don't
+        // re-queue ones we already finished or permanently failed.
+        const existing = await prisma.dmLog.findFirst({
+          where: {
+            commentId: event.commentId,
+            OR: [
+              { status: { in: [...DONE_STATUSES] } },
+              {
+                status: "FAILED",
+                errorMessage: {
+                  contains: "outside of allowed window",
+                },
+              },
+            ],
+          },
+          select: { id: true },
+        });
+        if (existing) continue;
+
         await queue.add(
           "process-comment",
           {

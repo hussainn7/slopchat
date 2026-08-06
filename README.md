@@ -44,7 +44,28 @@ The web app handles the dashboard and incoming webhooks, while a separate backgr
 
 ## Quick Start
 
-To run SlopChat, you need a Meta Developer app, a Resend account for magic login links, and hosting (or docker to run locally).
+SlopChat is two processes that share one Postgres database and one Redis queue:
+
+| Piece | Best free/cheap option | Why |
+| --- | --- | --- |
+| Web app + Meta webhooks | **Vercel** | Free HTTPS URL, easy Next.js deploys, good for the dashboard and `/api/webhook` |
+| Background worker | **Render** or **Railway** | Must stay online. Vercel serverless cannot run a queue consumer |
+| Postgres | **Supabase** or Railway Postgres | Campaigns, DM logs, webhook rows |
+| Redis | **Upstash** or Railway Redis | BullMQ job queue. Use the `rediss://` URL (TLS) on Vercel |
+
+The web app receives Instagram webhooks and enqueues jobs. The worker drains the queue and sends DMs. Both need the **same** `DATABASE_URL`, `REDIS_URL`, and `ENCRYPTION_KEY`.
+
+### Production shape that works
+
+1. Deploy the Next.js app to Vercel (`NEXTAUTH_URL` / `PUBLIC_URL` = your `*.vercel.app`).
+2. Point Meta’s webhook callback at `https://YOUR_VERCEL_URL/api/webhook`.
+3. Run `npm run worker` on Render/Railway with the same env vars.
+4. Use Upstash Redis with `rediss://...` (two s’s). Plain `redis://` often hangs on Vercel.
+5. Keep the worker awake on free tiers (ping its URL every few minutes).
+
+If Vercel cannot reach Redis, webhooks still save as `PENDING` in Postgres and the worker drains them on a short interval. That is why DMs can take ~15–30s instead of being instant — fix Redis on Vercel to make them immediate.
+
+Full Meta app + env walkthrough: [docs/setup.md](docs/setup.md).
 
 ### Running locally (Docker)
 
@@ -58,8 +79,6 @@ npm run db:migrate
 npm run dev               # dashboard runs on http://localhost:3000
 npm run worker            # in a second terminal (sends the DMs)
 ```
-
-For full environment variable details and how to configure the Meta Developer App, see [docs/setup.md](docs/setup.md).
 
 ## Tech Stack
 

@@ -290,6 +290,12 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
   } = job.data;
   const requeueAttempt = job.data.requeueAttempt ?? 0;
 
+  // Never DM yourself — webhook/poll can still surface the account's own comments.
+  if (commenterId === instagramAccountId) {
+    console.log(`[DM Worker] Skipping own-account comment ${commentId}`);
+    return;
+  }
+
   const automations = await prisma.automation.findMany({
     where: {
       // Match campaigns bound to this specific post, plus any-post campaigns.
@@ -345,13 +351,29 @@ async function processComment(job: Job<ProcessCommentJob>): Promise<void> {
 
     const alreadyDmd = existingLog?.status === "SENT";
     const alreadyPublicReplied = Boolean(existingLog?.publicReplySentAt);
+    const publicReplyDead = /does not exist|Unsupported post request|missing permissions/i.test(
+      existingLog?.publicReplyError ?? ""
+    );
     const needsDm = !alreadyDmd;
 
     // Skip only when there is genuinely nothing left to do. A comment whose DM
     // already sent but whose public reply never posted (e.g. it hit a rate
-    // limit) must still come back so the public reply can be retried.
+    // limit) must still come back so the public reply can be retried — unless
+    // Meta already said the comment object is gone (deleted / no permission).
     if (existingLog?.status === "SKIPPED_PLAN_LIMIT") continue;
-    if (alreadyDmd && (alreadyPublicReplied || !automation.publicReplyEnabled)) {
+    if (
+      alreadyDmd &&
+      (alreadyPublicReplied ||
+        !automation.publicReplyEnabled ||
+        publicReplyDead)
+    ) {
+      continue;
+    }
+    // Don't keep DM-spamming the same comment after a permanent Meta refusal.
+    if (
+      existingLog?.status === "FAILED" &&
+      /outside of allowed window/i.test(existingLog.errorMessage ?? "")
+    ) {
       continue;
     }
 
