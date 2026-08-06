@@ -10,17 +10,23 @@ import Redis from "ioredis";
 let connection: Redis | null = null;
 
 export function getRedisConnection(): Redis {
+  // Serverless can reuse a dead socket across invocations — rebuild if closed.
+  if (connection && (connection.status === "end" || connection.status === "close")) {
+    connection.disconnect();
+    connection = null;
+  }
   if (!connection) {
     const onVercel = Boolean(process.env.VERCEL);
     connection = new Redis(process.env.REDIS_URL!, {
       maxRetriesPerRequest: null, // Required by BullMQ
-      // Fail fast on Vercel only — hanging forever leaves WebhookEvents PENDING.
-      // The long-lived worker must not use commandTimeout or BullMQ breaks.
+      // Prefer IPv4 on Vercel; keep a connect timeout so hung TCP doesn't freeze
+      // the webhook forever. Do NOT disable the offline queue on cold start.
       ...(onVercel
         ? {
-            connectTimeout: 5_000,
-            commandTimeout: 8_000,
-            enableOfflineQueue: false,
+            family: 4,
+            connectTimeout: 10_000,
+            commandTimeout: 10_000,
+            enableReadyCheck: false,
           }
         : {}),
     });
