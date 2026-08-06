@@ -8,6 +8,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Space_Grotesk } from "next/font/google";
+
+const displayFont = Space_Grotesk({ subsets: ["latin"], weight: ["700"] });
 
 const navItems = [
   { label: "Dashboard", href: "/dashboard" },
@@ -51,8 +54,8 @@ export default function Sidebar({
         `}
       >
         <div className="px-6 py-5 border-b border-border">
-          <Link href="/dashboard" className="text-base font-semibold">
-            OpenReply
+          <Link href="/dashboard" className={`text-xl font-bold tracking-tight ${displayFont.className}`}>
+            SlopChat
           </Link>
         </div>
 

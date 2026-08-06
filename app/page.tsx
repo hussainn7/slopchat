@@ -183,11 +183,11 @@ function MatchedCommentCard() {
   return (
     <div className="w-64 rounded-lg border border-border bg-surface p-4 shadow-2xl shadow-black/50">
       <p className="text-xs text-muted">New comment</p>
-      <p className="mt-1 text-sm font-semibold text-foreground">@maya.co</p>
+      <p className="mt-1 text-sm font-semibold text-foreground">@slop.creator</p>
       <p className="mt-1 text-sm text-muted">LINK please</p>
       <div className="mt-3 border-t border-border pt-3">
         <p className="text-xs text-muted">
-          Matched <span className="text-accent">GUIDE</span>
+          Matched <span className="text-indigo-600">GUIDE</span>
         </p>
         <p className="mt-1 text-sm font-medium text-success">
           Queued private reply
@@ -217,16 +217,16 @@ const dashboardChart: [string, number][] = [
 ];
 
 const dashboardActivity = [
-  ["@maya.co", "Product guide reply", "Sent", "text-success"],
-  ["@founder.ray", "Price request", "Sent", "text-success"],
-  ["@shop.ava", "Lead magnet", "Queued", "text-warning"],
+  ["@slop.creator", "Product guide reply", "Sent", "text-success"],
+  ["@tech.founder", "Price request", "Sent", "text-success"],
+  ["@slop.shop", "Lead magnet", "Queued", "text-warning"],
 ];
 
 function DashboardPreview() {
   const maxDM = Math.max(...dashboardChart.map(([, n]) => n));
   return (
     <AppWindow label="app / dashboard">
-      <h3 className="text-base font-semibold text-foreground">Hello, Maya!</h3>
+      <h3 className="text-base font-semibold text-foreground">Hello, Creator!</h3>
       <p className="mt-1 text-xs text-muted">2 connected accounts · 340 contacts</p>
 
       <div className="mt-4 grid grid-cols-3 gap-3">

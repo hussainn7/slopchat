@@ -2,7 +2,7 @@ import { signIn } from "@/lib/auth";
 import { getCampaignTemplate } from "@/lib/templates/campaign-templates";
 
 export const metadata = {
-  title: "Login - OpenReply",
+  title: "Login - SlopChat",
   description: "Sign in to manage Instagram comment-to-DM campaigns.",
 };
 
@@ -35,8 +35,8 @@ export default async function LoginPage({
     <div className="min-h-screen flex items-center justify-center px-6">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-semibold text-foreground">
-            OpenReply
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            SlopChat
           </h1>
           <p className="text-muted text-sm leading-relaxed mt-2">
             {selectedTemplate
