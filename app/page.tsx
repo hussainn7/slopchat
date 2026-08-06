@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { Space_Grotesk } from "next/font/google";
+
+const displayFont = Space_Grotesk({ subsets: ["latin"], weight: ["700"] });
 
 export const metadata: Metadata = {
   title: "SlopChat - Open source Instagram comment-to-DM automation",
@@ -288,7 +291,7 @@ export default async function Home() {
       <header className="sticky top-0 z-40 border-b border-zinc-200 bg-white">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3" aria-label="SlopChat home">
-            <span className="text-lg font-bold text-zinc-900">SlopChat</span>
+            <span className={`text-xl font-bold text-zinc-900 tracking-tight ${displayFont.className}`}>SlopChat</span>
           </Link>
 
           <div className="flex items-center gap-4">
@@ -306,7 +309,7 @@ export default async function Home() {
             </a>
             <Link
               href="/login"
-              className="inline-flex items-center justify-center gap-2 bg-orange-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-orange-600"
+              className="inline-flex items-center justify-center gap-2 bg-indigo-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-indigo-700"
             >
               Get started
             </Link>
@@ -320,20 +323,18 @@ export default async function Home() {
             Open source · Official Meta API
           </div>
 
-          <h1 className="mt-7 text-balance text-5xl font-black leading-[1.02] text-zinc-900 sm:text-6xl lg:text-7xl">
-            Make every comment start the right DM
+          <h1 className={`mt-7 text-balance text-5xl font-bold leading-[1.02] text-zinc-900 sm:text-6xl lg:text-7xl ${displayFont.className}`}>
+            Automate your Instagram DMs
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-zinc-600">
-            Open-sourced ManyChat. When someone comments your keyword on a post
-            or reel, they get your DM a second later. Free, self-hosted, and
-            built on the official Instagram API.
+            The open-source ManyChat alternative. Turn your comment sections into automated DM funnels instantly. Free, self-hosted, and fully compliant with Meta's API.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/login"
-              className="inline-flex items-center justify-center gap-2 bg-orange-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-orange-600"
+              className="inline-flex items-center justify-center gap-2 bg-indigo-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-indigo-700"
             >
               Get started
             </Link>
@@ -366,8 +367,8 @@ export default async function Home() {
       <section id="how" className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-6 lg:px-8">
         <div className="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-center">
           <div>
-            <p className="text-sm font-bold uppercase text-orange-600">How it works</p>
-            <h2 className="mt-3 text-4xl font-black leading-tight text-zinc-900 sm:text-5xl">
+            <p className="text-sm font-bold uppercase text-indigo-600">How it works</p>
+            <h2 className={`mt-3 text-4xl font-bold leading-tight text-zinc-900 sm:text-5xl ${displayFont.className}`}>
               A comment in, a DM out
             </h2>
             <p className="mt-5 text-base leading-8 text-zinc-600">
@@ -383,7 +384,7 @@ export default async function Home() {
                 key={step.title}
                 className="grid gap-4 border border-zinc-200 bg-zinc-50 p-5 sm:grid-cols-[120px_1fr]"
               >
-                <p className="text-sm font-bold text-orange-600">{step.eyebrow}</p>
+                <p className="text-sm font-bold text-indigo-600">{step.eyebrow}</p>
                 <div>
                   <h3 className="text-xl font-bold text-zinc-900">{step.title}</h3>
                   <p className="mt-2 text-sm leading-6 text-zinc-600">{step.description}</p>
@@ -399,8 +400,8 @@ export default async function Home() {
           <DashboardPreview />
 
           <div>
-            <p className="text-sm font-bold uppercase text-orange-600">The dashboard</p>
-            <h2 className="mt-3 text-4xl font-black leading-tight text-zinc-900 sm:text-5xl">
+            <p className="text-sm font-bold uppercase text-indigo-600">The dashboard</p>
+            <h2 className={`mt-3 text-4xl font-bold leading-tight text-zinc-900 sm:text-5xl ${displayFont.className}`}>
               See exactly what happened
             </h2>
             <p className="mt-5 text-base leading-8 text-zinc-600">
@@ -413,8 +414,8 @@ export default async function Home() {
 
       <section id="features" className="mx-auto w-full max-w-6xl px-5 py-20 sm:px-6 lg:px-8">
         <div className="max-w-2xl">
-          <p className="text-sm font-bold uppercase text-orange-600">What&rsquo;s included</p>
-          <h2 className="mt-3 text-4xl font-black leading-tight text-zinc-900 sm:text-5xl">
+          <p className="text-sm font-bold uppercase text-indigo-600">What&rsquo;s included</p>
+          <h2 className={`mt-3 text-4xl font-bold leading-tight text-zinc-900 sm:text-5xl ${displayFont.className}`}>
             Everything, no tiers
           </h2>
           <p className="mt-5 text-base leading-8 text-zinc-600">
@@ -436,9 +437,9 @@ export default async function Home() {
       </section>
 
       <section className="mx-auto w-full max-w-6xl px-5 pb-20 sm:px-6 lg:px-8">
-        <div className="grid gap-8 border border-orange-200 bg-orange-50 p-6 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
+        <div className="grid gap-8 border border-indigo-200 bg-indigo-50 p-6 sm:p-10 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>
-            <h2 className="max-w-3xl text-4xl font-black leading-tight text-zinc-900 sm:text-5xl">
+            <h2 className={`max-w-3xl text-4xl font-bold leading-tight text-zinc-900 sm:text-5xl ${displayFont.className}`}>
               Turn your next reel&rsquo;s comments into DMs
             </h2>
             <p className="mt-4 text-base text-zinc-600">
@@ -448,7 +449,7 @@ export default async function Home() {
           <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
             <Link
               href="/login"
-              className="inline-flex items-center justify-center gap-2 bg-orange-500 px-6 py-3 text-sm font-bold text-white transition hover:bg-orange-600"
+              className="inline-flex items-center justify-center gap-2 bg-indigo-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-indigo-700"
             >
               Get started
             </Link>
